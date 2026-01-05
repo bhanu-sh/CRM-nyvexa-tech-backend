@@ -5,7 +5,12 @@ import Lead from "../models/lead.models.js";
  */
 export const createLead = async (req, res) => {
   try {
-    const lead = await Lead.create(req.body);
+    const lead = await Lead.create({
+      ...req.body,
+      createdBy: req.user._id,
+      leadOwner: req.user.company
+    });
+
     res.status(201).json(lead);
   } catch (err) {
     res.status(400).json({ message: err.message });

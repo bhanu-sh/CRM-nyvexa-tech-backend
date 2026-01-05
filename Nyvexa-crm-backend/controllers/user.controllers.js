@@ -7,7 +7,7 @@ export const createUser = async (req, res) => {
   try {
     const user = await User.create({
       ...req.body,
-      createdBy: req.user?.id // optional (JWT)
+      createdBy: req.user?._id // optional (JWT)
     });
 
     res.status(201).json({

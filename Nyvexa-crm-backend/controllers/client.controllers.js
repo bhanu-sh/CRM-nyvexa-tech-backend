@@ -5,10 +5,20 @@ import Client from "../models/client.models.js";
  */
 export const createClient = async (req, res) => {
   try {
-    const client = await Client.create(req.body);
-    res.status(201).json({ success: true, data: client });
+    const client = await Client.create({
+      ...req.body,
+      createdBy: req.user._id   // ← from verifyUser
+    });
+
+    res.status(201).json({
+      success: true,
+      data: client
+    });
   } catch (err) {
-    res.status(400).json({ success: false, message: err.message });
+    res.status(400).json({
+      success: false,
+      message: err.message
+    });
   }
 };
 

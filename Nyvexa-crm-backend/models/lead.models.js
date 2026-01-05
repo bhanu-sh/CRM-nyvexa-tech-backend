@@ -2,32 +2,30 @@ import mongoose from "mongoose";
 
 const leadSchema = new mongoose.Schema(
   {
-    //Client reference
-    clientID: {
+    // Lead owner (Client)
+    leadOwner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Client",
-      required: true,
-      index: true
+      required: true
     },
 
-    //Auto-generated Lead Number
+    // User who created the lead
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
+
+    // Auto-generated Lead Number
     panNo: {
       type: String,
-      unique: true,
-      index: true
+      unique: true
     },
 
     status: {
       type: String,
       enum: ["Pending", "Done", "Cancel", "Postpone"],
       default: "Pending"
-    },
-
-    companyName: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true
     },
 
     source: {
@@ -87,10 +85,9 @@ const leadSchema = new mongoose.Schema(
       default: true
     }
   },
-  {
-    timestamps: true
-  }
+  { timestamps: true }
 );
 
 export default mongoose.model("Lead", leadSchema);
+
 

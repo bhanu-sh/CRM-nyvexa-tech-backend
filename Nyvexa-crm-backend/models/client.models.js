@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
 
 const clientSchema = new mongoose.Schema(
   {
@@ -28,26 +27,14 @@ const clientSchema = new mongoose.Schema(
       trim: true
     },
 
-    phone: {
-      type: String
-    },
-
-    // 🔐 Password (hashed)
-    password: {
-      type: String,
-      required: true,
-      minlength: 6,
-      select: false // IMPORTANT: hide password by default
-    },
+    phone: String,
 
     address1: {
       type: String,
       required: true
     },
 
-    address2: {
-      type: String
-    },
+    address2: String,
 
     city: String,
     state: String,
@@ -55,7 +42,8 @@ const clientSchema = new mongoose.Schema(
 
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
+      ref: "User",
+      required: true
     },
 
     isActive: {
@@ -66,19 +54,6 @@ const clientSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-clientSchema.pre("save", async function (next) {
-  // Only hash if password is new or modified
-  if (!this.isModified("password")) return next();
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-
-  next();
-});
-
-clientSchema.methods.comparePassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
 export default mongoose.model("Client", clientSchema);
+
 

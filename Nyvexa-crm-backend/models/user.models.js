@@ -34,6 +34,13 @@ const userSchema = new mongoose.Schema(
       required: true
     },
 
+    // Optional: null for SuperAdmin
+    company: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Client",
+      default: null
+    },
+
     status: {
       type: String,
       enum: ["active", "inactive", "blocked"],
@@ -44,7 +51,8 @@ const userSchema = new mongoose.Schema(
 
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
+      ref: "User",
+      default: null
     }
   },
   { timestamps: true }
@@ -59,7 +67,7 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-userSchema.methods.comparePassword = async function (candidatePassword) {
+userSchema.methods.comparePassword = function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
