@@ -25,13 +25,14 @@ export const getLeads = async (req, res) => {
   try {
     const filter = {};
 
-    if (req.query.clientID) {
-      filter.clientID = req.query.clientID;
+    // Tenant scoping: non-global users see only their company leads
+    if (req.user.clientID) {
+      filter.leadOwner = req.user.clientID;
     }
 
     const leads = await Lead.find(filter)
-      .populate("clientID", "companyName")
       .populate("leadOwner", "name email")
+      .populate("createdBy", "fullName email")
       .sort({ createdAt: -1 });
 
     res.json(leads);
