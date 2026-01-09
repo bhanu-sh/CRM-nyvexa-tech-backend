@@ -23,7 +23,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "http://crm-nyvexa.vercel.app",
+  "https://crm-nyvexa.vercel.app",
 ];
 
 app.use(
