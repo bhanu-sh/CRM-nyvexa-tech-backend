@@ -21,10 +21,23 @@ connectDB();
 
 const app = express();
 
-app.use(cors({
-  origin: "http://localhost:3000",
-  credentials: true,
-}));
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://crm-nyvexa.vercel.app",
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 app.use(cookieParser(process.env.COOKIE_SECRET));
@@ -33,6 +46,10 @@ app.use(ensureDeviceId);
 
 app.get("/", (req, res) => {
   res.send("Server running...");
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
 });
 
 app.use("/api/auth", authRoutes);
@@ -48,6 +65,4 @@ app.use("/api/roles", roleRoutes);
 app.use("/api/users", userRoutes);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-);
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
