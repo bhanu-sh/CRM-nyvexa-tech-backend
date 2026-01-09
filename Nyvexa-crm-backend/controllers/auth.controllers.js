@@ -3,6 +3,7 @@ import Session from "../models/session.models.js";
 import crypto from "crypto";
 
 const MAX_DEVICES = 2;
+const isProd = process.env.NODE_ENV === "production";
 
 export const login = async (req, res) => {
   try {
@@ -27,7 +28,7 @@ export const login = async (req, res) => {
       user: user._id,
       deviceId,
       isValid: true,
-      expiresAt: { $gt: new Date() }
+      expiresAt: { $gt: new Date() },
     });
 
     if (existingSession) {
@@ -35,9 +36,9 @@ export const login = async (req, res) => {
       res.cookie("session", existingSession.sessionToken, {
         httpOnly: true,
         signed: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
       return res.json({
@@ -46,8 +47,8 @@ export const login = async (req, res) => {
         user: {
           id: user._id,
           fullName: user.fullName,
-          role: user.role.name
-        }
+          role: user.role.name,
+        },
       });
     }
 
@@ -55,7 +56,7 @@ export const login = async (req, res) => {
     const activeSessions = await Session.find({
       user: user._id,
       isValid: true,
-      expiresAt: { $gt: new Date() }
+      expiresAt: { $gt: new Date() },
     }).sort({ createdAt: 1 });
 
     if (activeSessions.length >= MAX_DEVICES) {
@@ -65,7 +66,7 @@ export const login = async (req, res) => {
       );
 
       await Session.updateMany(
-        { _id: { $in: sessionsToInvalidate.map(s => s._id) } },
+        { _id: { $in: sessionsToInvalidate.map((s) => s._id) } },
         { isValid: false }
       );
     }
@@ -80,15 +81,15 @@ export const login = async (req, res) => {
       role: user.role._id,
       ipAddress: req.ip,
       userAgent: req.headers["user-agent"],
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
     res.cookie("session", sessionToken, {
       httpOnly: true,
       signed: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.json({
@@ -97,8 +98,8 @@ export const login = async (req, res) => {
       user: {
         id: user._id,
         fullName: user.fullName,
-        role: user.role.name
-      }
+        role: user.role.name,
+      },
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -124,6 +125,9 @@ export const logout = async (req, res) => {
     { isValid: false }
   );
 
-  res.clearCookie("session");
+  res.clearCookie("session", {
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+  });
   res.json({ success: true });
 };
